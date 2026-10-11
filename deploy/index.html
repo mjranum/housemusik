@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>housemusik</title>
+  <style>
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center;
+      background: #0a0a0b; color: #e4e4e6; font: 15px/1.5 "Helvetica Neue", Helvetica, Arial, sans-serif; }
+    main { max-width: 32em; padding: 16px; }
+    h1 { font-size: 17px; font-weight: 500; letter-spacing: 0.08em; }
+    a { color: #d6d6da; }
+    p { color: #8b8b91; }
+    code { color: #e4e4e6; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>housemusik</h1>
+    <p id="msg">Opening the player…</p>
+    <p><a id="go" href="#">Open housemusik</a></p>
+  </main>
+  <script>
+    // The player is served by the housemusik Node server on port 8080 of this
+    // same machine. Change PORT here if you start it on a different one.
+    var PORT = 8080;
+    var url = location.protocol + '//' + location.hostname + ':' + PORT + '/';
+    document.getElementById('go').href = url;
+    fetch(url + 'api/time', { mode: 'no-cors', cache: 'no-store' })
+      .then(function () { location.replace(url); })
+      .catch(function () {
+        document.getElementById('msg').innerHTML =
+          'The player isn’t running. Start it with <code>node server.js</code> in ' +
+          '<code>/var/www/html/housemusik</code>, then reload this page.';
+      });
+  </script>
+</body>
+</html>
