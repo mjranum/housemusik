@@ -1,0 +1,14 @@
+{
+  "name": "housemusik",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Ephemeral whole-house ambient and music library playback in the browser.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "demo-music": "sh test/make-demo-music.sh music",
+    "test": "node --test test/*.test.js"
+  },
+  "engines": { "node": ">=18" },
+  "license": "UNLICENSED"
+}

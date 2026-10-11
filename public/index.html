@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#14161a">
+  <title>housemusik</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>housemusik</h1>
+    <span id="conn" class="conn" title="Connection to the house server">connecting…</span>
+  </header>
+
+  <section id="speaker" class="panel speaker">
+    <div class="row">
+      <strong>This device</strong>
+      <select id="speaker-room" aria-label="Room this device plays in">
+        <option value="">is a remote only</option>
+      </select>
+      <button id="speaker-enable" hidden>Tap to start speaker</button>
+    </div>
+    <div class="row small" id="speaker-detail" hidden>
+      <span id="speaker-status"></span>
+      <label>Latency offset
+        <input id="speaker-latency" type="number" step="10" value="0" style="width:5em"> ms
+      </label>
+    </div>
+  </section>
+
+  <main>
+    <section>
+      <h2>Rooms</h2>
+      <div id="zones"></div>
+    </section>
+
+    <section class="panel">
+      <div class="row">
+        <h2>Library</h2>
+        <span id="lib-count" class="small"></span>
+        <button id="lib-rescan" class="ghost small">Rescan</button>
+      </div>
+      <div class="row">
+        <input id="lib-search" type="search" placeholder="Search artist, album, title" autocomplete="off">
+        <label class="small">to
+          <select id="lib-target" aria-label="Zone to play into"></select>
+        </label>
+      </div>
+      <div class="row small">
+        <button id="lib-play-all" class="ghost">Play results</button>
+        <button id="lib-shuffle" class="ghost">Shuffle results</button>
+      </div>
+      <ul id="lib-list" class="tracks"></ul>
+    </section>
+  </main>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
