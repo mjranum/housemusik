@@ -29,7 +29,9 @@ const STATIC_TYPES = {
   '.webmanifest': 'application/manifest+json',
 };
 
-const library = new Library(MUSIC_DIR);
+const PLAYLIST_DB = process.env.PLAYLIST_DB ? path.resolve(process.env.PLAYLIST_DB) : null;
+const PLAYLIST_TABLE = process.env.PLAYLIST_TABLE || 'playlist';
+const library = new Library(MUSIC_DIR, { db: PLAYLIST_DB, table: PLAYLIST_TABLE });
 const clients = new Set(); // { res, room }
 const house = new House(ROOMS, library, broadcast);
 
@@ -191,10 +193,10 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'GET' && p === '/api/events') return handleEvents(req, res, url);
     if (req.method === 'GET' && p === '/api/state') return sendJson(res, 200, house.snapshot(speakerCounts()));
     if (req.method === 'GET' && p === '/api/library') {
-      return sendJson(res, 200, { root: path.basename(MUSIC_DIR), tracks: library.list() });
+      return sendJson(res, 200, { source: PLAYLIST_DB ? 'playlist' : 'folder', tracks: library.list() });
     }
     if (req.method === 'POST' && p === '/api/rescan') {
-      const count = await library.scan();
+      const count = await refreshLibrary();
       return sendJson(res, 200, { tracks: count });
     }
     if (req.method === 'POST' && p === '/api/cmd') {
@@ -215,9 +217,27 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-library.scan().then((n) => {
-  console.log(`housemusik: ${n} tracks in ${MUSIC_DIR}`);
-}).catch((e) => console.error('library scan failed:', e.message));
+const source = PLAYLIST_DB ? `table ${PLAYLIST_TABLE} in ${PLAYLIST_DB}` : MUSIC_DIR;
+let lastVersion = 0;
+function refreshLibrary() {
+  return library.scan().then((n) => {
+    if (library.version !== lastVersion) {
+      lastVersion = library.version;
+      console.log(`housemusik: ${n} tracks from ${source}`);
+      if (library.skipped.length) {
+        console.warn(`housemusik: skipped ${library.skipped.length} missing or non-audio entries, e.g. ${library.skipped[0]}`);
+      }
+      for (const c of clients) c.res.write('event: library\ndata: {}\n\n');
+    }
+    return n;
+  });
+}
+refreshLibrary().catch((e) => console.error('library load failed:', e.message));
+if (PLAYLIST_DB) {
+  // Pick up edits to the playlist table without a restart.
+  setInterval(() => refreshLibrary().catch((e) => console.error('playlist reload failed:', e.message)),
+    Number(process.env.PLAYLIST_POLL_MS) || 5000).unref();
+}
 
 server.listen(PORT, HOST, () => {
   console.log(`housemusik: http://${HOST === '0.0.0.0' ? 'localhost' : HOST}:${PORT}  rooms: ${ROOMS.join(', ')}`);

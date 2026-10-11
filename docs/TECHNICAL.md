@@ -25,11 +25,40 @@ No music handy? `npm run demo-music` writes a few test tones into `./music`
 | `PORT`      | `8080`                               |
 | `HOST`      | `0.0.0.0` (whole LAN)                |
 | `THEME_FILE`| `./config/theme.css`                 |
+| `PLAYLIST_DB` | unset (use the folder scan)        |
+| `PLAYLIST_TABLE` | `playlist`                      |
+| `PLAYLIST_POLL_MS` | `5000`                        |
 
 The library is read from the folder layout `Artist/Album/NN Title.ext`
 (mp3, m4a, aac, flac, ogg, opus, wav, webm). If `ffprobe` is installed, a
 track's real tags and duration replace the folder-derived ones the first time
 it plays. Press *Rescan* after adding music.
+
+## Playlist from a database
+
+Set `PLAYLIST_DB` to a SQLite file and the player takes its track list from a
+table in it (`playlist` by default, or `PLAYLIST_TABLE`) instead of scanning
+`MUSIC_DIR`. `config/playlist.sql` creates the table:
+
+| Column     | Meaning                                                    |
+|------------|------------------------------------------------------------|
+| `path`     | required; absolute, or relative to `MUSIC_DIR`             |
+| `position` | play order (rows without it fall back to insertion order)  |
+| `title`, `artist`, `album` | optional; override the file's own tags     |
+
+The server re-reads the table every few seconds, so rows you add, remove or
+reorder show up without a restart. Rows whose file is missing or isn't audio
+are skipped and logged. *Play results* with an empty search plays the whole
+table in order.
+
+```sh
+sqlite3 housemusik.db < config/playlist.sql        # or: node test/make-demo-db.js music housemusik.db
+PLAYLIST_DB=housemusik.db MUSIC_DIR=/path/to/music node server.js
+```
+
+This uses Node's built-in SQLite module, so it needs Node 22.5 or newer (Node
+prints an "experimental" warning on startup; that is expected). The folder
+scan still works on Node 18.
 
 ## Colors
 
@@ -42,7 +71,7 @@ screen for this on purpose.
 
 ```
 server.js        HTTP routes, Server-Sent Events push, media streaming (Range)
-lib/library.js   folder scan, path-derived metadata, lazy ffprobe
+lib/library.js   playlist table or folder scan, metadata, lazy ffprobe
 lib/house.js     rooms, zones (groups of rooms), queue, playback timeline
 public/app.js    remote UI, speaker mode, clock sync, drift correction
 public/ambient.js  generated ambient scenes

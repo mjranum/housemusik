@@ -406,7 +406,10 @@ function renderLibrary() {
 async function loadLibrary() {
   try {
     const res = await fetch('/api/library', { cache: 'no-store' });
-    library = (await res.json()).tracks;
+    const data = await res.json();
+    library = data.tracks;
+    document.querySelector('#lib-count').previousElementSibling.textContent =
+      data.source === 'playlist' ? 'Playlist' : 'Library';
   } catch { library = []; }
   renderLibrary();
 }
@@ -446,6 +449,7 @@ function connect() {
   const conn = $('conn');
   source.addEventListener('open', () => { conn.textContent = 'connected'; conn.className = 'conn ok'; syncClock(); });
   source.addEventListener('error', () => { conn.textContent = 'reconnecting…'; conn.className = 'conn bad'; });
+  source.addEventListener('library', () => loadLibrary());
   source.addEventListener('state', (e) => {
     state = JSON.parse(e.data);
     render();
