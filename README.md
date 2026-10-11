@@ -49,5 +49,6 @@ MUSIC_DIR=/path/to/your/music npm start
 ```
 
 Then open `http://<server address>:8080` on any device in the house.
-Setup options, the internals and tests are described in
+Colors and fonts can be changed in `config/theme.css`. Setup options, the
+internals and tests are described in
 [docs/TECHNICAL.md](docs/TECHNICAL.md).

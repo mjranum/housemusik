@@ -18,11 +18,19 @@ No music handy? `npm run demo-music` writes a few test tones into `./music`
 | `ROOMS`     | `Living Room,Kitchen,Bedroom,Office` |
 | `PORT`      | `8080`                               |
 | `HOST`      | `0.0.0.0` (whole LAN)                |
+| `THEME_FILE`| `./config/theme.css`                 |
 
 The library is read from the folder layout `Artist/Album/NN Title.ext`
 (mp3, m4a, aac, flac, ogg, opus, wav, webm). If `ffprobe` is installed, a
 track's real tags and duration replace the folder-derived ones the first time
 it plays. Press *Rescan* after adding music.
+
+## Colors
+
+The page is black and gray by default. Colors, font and corner rounding are
+set in `config/theme.css`, a short commented file of CSS variables. Edit it
+and reload the page; the server does not need a restart. There is no settings
+screen for this on purpose.
 
 ## How it fits together
 
@@ -32,6 +40,7 @@ lib/library.js   folder scan, path-derived metadata, lazy ffprobe
 lib/house.js     rooms, zones (groups of rooms), queue, playback timeline
 public/app.js    remote UI, speaker mode, clock sync, drift correction
 public/ambient.js  generated ambient scenes
+config/theme.css   colors and font, served as /theme.css
 ```
 
 - `GET /api/events[?speaker=Room]` streams the full house state on every change.

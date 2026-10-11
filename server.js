@@ -17,6 +17,7 @@ const MUSIC_DIR = path.resolve(process.env.MUSIC_DIR || path.join(__dirname, 'mu
 const ROOMS = (process.env.ROOMS || 'Living Room,Kitchen,Bedroom,Office')
   .split(',').map((s) => s.trim()).filter(Boolean);
 const PUBLIC_DIR = path.join(__dirname, 'public');
+const THEME_FILE = path.resolve(process.env.THEME_FILE || path.join(__dirname, 'config', 'theme.css'));
 const MAX_BODY = 1 << 20;
 
 const STATIC_TYPES = {
@@ -161,6 +162,13 @@ function handleMedia(req, res, id) {
 }
 
 function handleStatic(req, res, pathname) {
+  if (pathname === '/theme.css') {
+    // The hand-editable theme lives outside public/ so it is easy to find.
+    return fs.readFile(THEME_FILE, (err, data) => {
+      res.writeHead(200, { 'Content-Type': STATIC_TYPES['.css'], 'Cache-Control': 'no-cache' });
+      res.end(err ? '/* theme file not found; using the fallbacks in style.css */' : data);
+    });
+  }
   const rel = pathname === '/' ? 'index.html' : pathname.slice(1);
   const file = path.normalize(path.join(PUBLIC_DIR, rel));
   if (!file.startsWith(PUBLIC_DIR + path.sep)) return sendJson(res, 404, { error: 'not found' });

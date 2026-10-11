@@ -1,0 +1,20 @@
+/*
+  housemusik colors and type.
+
+  Edit the values below and reload the page; no restart is needed.
+  Colors can be any CSS color: #rrggbb, rgb(...), or names like "black".
+  To use a different file, start the server with THEME_FILE=/path/to/theme.css.
+*/
+:root {
+  --bg: #0a0a0b;          /* page background */
+  --panel: #141416;       /* cards and inputs */
+  --line: #2a2a2e;        /* borders, dividers, empty progress bar */
+  --text: #e4e4e6;        /* main text */
+  --muted: #8b8b91;       /* secondary text: artist, album, labels */
+  --accent: #d6d6da;      /* active buttons, progress, volume sliders */
+  --accent-text: #0a0a0b; /* text on accent-colored buttons */
+  --warn: #a8a8ae;        /* "reconnecting" notice */
+
+  --font: "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
+  --radius: 6px;          /* corner rounding; 0 for square corners */
+}

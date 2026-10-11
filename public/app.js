@@ -395,7 +395,7 @@ function renderLibrary() {
         const album = library.filter((x) => x.album === t.album && x.artist === t.artist);
         cmd({ cmd: 'play', zone: target(), trackIds: album.map((x) => x.id), index: album.indexOf(t) });
       },
-    }, '💿'),
+    }, '◎'),
     el('button', { title: 'Add to queue', onclick: () => cmd({ cmd: 'enqueue', zone: target(), trackIds: [t.id] }) }, '+')));
   if (rows.length > RENDER_LIMIT) {
     items.push(el('li', { class: 'empty' }, `${rows.length - RENDER_LIMIT} more; refine the search.`));
