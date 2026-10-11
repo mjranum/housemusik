@@ -2,6 +2,12 @@
 
 How to run, configure and test the server, and what the prototype does not do yet. For an overview, see the [README](../README.md).
 
+## Requirements
+
+- Node.js 18+ and npm (no npm packages are installed; npm only runs scripts).
+- ffmpeg (provides `ffprobe`) for tags, durations, `npm run demo-music` and
+  `npm test`. Without it the server still runs, using path-derived names.
+
 ## Run it
 
 ```sh

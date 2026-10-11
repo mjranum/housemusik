@@ -28,11 +28,18 @@ into an amplifier, or a Raspberry Pi, can be set to play for that room.
 
 ## What it needs
 
-- One always-on computer on your home network to run the server (Node 18 or
-  newer), with access to your music folder.
+- One always-on computer on your home network to run the server, with access
+  to your music folder. It needs:
+  - **Node.js 18 or newer** and **npm**, which runs the server and its tests.
+    There are no other packages to install.
+  - **ffmpeg**, which reads track names and lengths from the files' own tags
+    and makes the demo tracks. The app runs without it, but then names come
+    from folder and file names and track lengths aren't shown.
 - A device with a browser in each room you want to hear music in.
-- Optionally, `ffmpeg` installed on the server so track names and lengths are
-  read from the files' own tags.
+
+On Debian or Ubuntu: `sudo apt install nodejs npm ffmpeg`. On a Mac with
+Homebrew: `brew install node ffmpeg`. Check with `node --version` (18 or
+higher), `npm --version` and `ffmpeg -version`.
 
 ## Limitations
 
