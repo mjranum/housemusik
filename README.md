@@ -14,7 +14,7 @@ into an amplifier, or a Raspberry Pi, can be set to play for that room.
 ## What it does
 
 - **Plays your own library.** It takes its playlist from a table in a local
-  SQLite database, or, without one, from a music folder organized as
+  MariaDB database, or, without one, from a music folder organized as
   Artist / Album / Track. Changes to the table show up within a few seconds.
   There is no streaming service or account involved.
 - **Ambient sound.** Rain, ocean, wind, brown noise and a soft drone are
@@ -31,16 +31,17 @@ into an amplifier, or a Raspberry Pi, can be set to play for that room.
 
 - One always-on computer on your home network to run the server, with access
   to your music folder. It needs:
-  - **Node.js 22.5 or newer** (for the SQLite playlist; 18 is enough for the
-    folder mode) and **npm**, which runs the server and its tests. There are
-    no other packages to install.
+  - **Node.js 18 or newer** and **npm**, which runs the server and its tests.
+    There are no other packages to install.
+  - The **MariaDB client** (`mariadb` command), which reads the playlist
+    from your database.
   - **ffmpeg**, which reads track names and lengths from the files' own tags
     and makes the demo tracks. The app runs without it, but then names come
     from folder and file names and track lengths aren't shown.
 - A device with a browser in each room you want to hear music in.
 
-On Debian or Ubuntu: `sudo apt install nodejs npm ffmpeg`. On a Mac with
-Homebrew: `brew install node ffmpeg`. Check with `node --version` (22.5 or
+On Debian or Ubuntu: `sudo apt install nodejs npm ffmpeg mariadb-client`. On a Mac with
+Homebrew: `brew install node ffmpeg mariadb`. Check with `node --version` (18 or
 higher), `npm --version` and `ffmpeg -version`.
 
 ## Limitations

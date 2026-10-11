@@ -5,6 +5,7 @@ How to run, configure and test the server, and what the prototype does not do ye
 ## Requirements
 
 - Node.js 18+ and npm (no npm packages are installed; npm only runs scripts).
+- The `mariadb` command-line client, when the playlist comes from MariaDB.
 - ffmpeg (provides `ffprobe`) for tags, durations, `npm run demo-music` and
   `npm test`. Without it the server still runs, using path-derived names.
 
@@ -25,40 +26,44 @@ No music handy? `npm run demo-music` writes a few test tones into `./music`
 | `PORT`      | `8080`                               |
 | `HOST`      | `0.0.0.0` (whole LAN)                |
 | `THEME_FILE`| `./config/theme.css`                 |
-| `PLAYLIST_DB` | unset (use the folder scan)        |
-| `PLAYLIST_TABLE` | `playlist`                      |
+| `PLAYLIST_DB` | unset (use the folder scan); a MariaDB database name |
+| `PLAYLIST_QUERY_FILE` | `./config/playlist-query.sql` |
 | `PLAYLIST_POLL_MS` | `5000`                        |
+| `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD` | unset (client defaults) |
+| `DB_DEFAULTS_FILE` | unset (an option file for the client) |
+| `DB_CLIENT` | `mariadb` (use `mysql` for the MySQL client) |
 
 The library is read from the folder layout `Artist/Album/NN Title.ext`
 (mp3, m4a, aac, flac, ogg, opus, wav, webm). If `ffprobe` is installed, a
 track's real tags and duration replace the folder-derived ones the first time
 it plays. Press *Rescan* after adding music.
 
-## Playlist from a database
+## Playlist from MariaDB
 
-Set `PLAYLIST_DB` to a SQLite file and the player takes its track list from a
-table in it (`playlist` by default, or `PLAYLIST_TABLE`) instead of scanning
-`MUSIC_DIR`. `config/playlist.sql` creates the table:
+Set `PLAYLIST_DB` to a MariaDB database name and the player takes its track
+list from that database instead of scanning `MUSIC_DIR`. It runs the query in
+`config/playlist-query.sql`, which you edit to match your tables. The query
+must return a `path` column (absolute, or relative to `MUSIC_DIR`) and can
+also return `id`, `title`, `artist` and `album`. Rows play in the order the
+query returns them.
 
-| Column     | Meaning                                                    |
-|------------|------------------------------------------------------------|
-| `path`     | required; absolute, or relative to `MUSIC_DIR`             |
-| `position` | play order (rows without it fall back to insertion order)  |
-| `title`, `artist`, `album` | optional; override the file's own tags     |
+The server re-reads the playlist every few seconds (and re-reads the query
+file each time), so changes show up without a restart. Rows whose file is
+missing or isn't audio are skipped and logged. *Play results* with an empty
+search plays the whole playlist in order.
 
-The server re-reads the table every few seconds, so rows you add, remove or
-reorder show up without a restart. Rows whose file is missing or isn't audio
-are skipped and logged. *Play results* with an empty search plays the whole
-table in order.
+The server talks to MariaDB through the `mariadb` command-line client, so no
+database driver is installed. It logs in the same way the client does for you
+at a shell: your socket login, `~/.my.cnf`, `DB_DEFAULTS_FILE`, or the `DB_*`
+settings. The password, if given, is passed in the environment, not on the
+command line. A read-only database user is enough.
 
 ```sh
-sqlite3 housemusik.db < config/playlist.sql        # or: node test/make-demo-db.js music housemusik.db
-PLAYLIST_DB=housemusik.db MUSIC_DIR=/path/to/music node server.js
+PLAYLIST_DB=housemusik MUSIC_DIR=/path/to/music node server.js
 ```
 
-This uses Node's built-in SQLite module, so it needs Node 22.5 or newer (Node
-prints an "experimental" warning on startup; that is expected). The folder
-scan still works on Node 18.
+`config/playlist-schema.sql` has an example table that works with the default
+query, for testing or if you don't have one yet.
 
 ## Colors
 
@@ -71,7 +76,8 @@ screen for this on purpose.
 
 ```
 server.js        HTTP routes, Server-Sent Events push, media streaming (Range)
-lib/library.js   playlist table or folder scan, metadata, lazy ffprobe
+lib/library.js   playlist (MariaDB) or folder scan, metadata, lazy ffprobe
+lib/db.js        runs the playlist query through the mariadb client
 lib/house.js     rooms, zones (groups of rooms), queue, playback timeline
 public/app.js    remote UI, speaker mode, clock sync, drift correction
 public/ambient.js  generated ambient scenes

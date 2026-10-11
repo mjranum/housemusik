@@ -29,9 +29,20 @@ const STATIC_TYPES = {
   '.webmanifest': 'application/manifest+json',
 };
 
-const PLAYLIST_DB = process.env.PLAYLIST_DB ? path.resolve(process.env.PLAYLIST_DB) : null;
-const PLAYLIST_TABLE = process.env.PLAYLIST_TABLE || 'playlist';
-const library = new Library(MUSIC_DIR, { db: PLAYLIST_DB, table: PLAYLIST_TABLE });
+const PLAYLIST_QUERY_FILE = path.resolve(process.env.PLAYLIST_QUERY_FILE || path.join(__dirname, 'config', 'playlist-query.sql'));
+const DB = process.env.PLAYLIST_DB ? {
+  database: process.env.PLAYLIST_DB,
+  client: process.env.DB_CLIENT || 'mariadb',
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  defaultsFile: process.env.DB_DEFAULTS_FILE,
+  // The query file is re-read on every reload, so edits apply without a restart.
+  get query() { return fs.readFileSync(PLAYLIST_QUERY_FILE, 'utf8'); },
+} : null;
+const PLAYLIST_DB = DB && DB.database;
+const library = new Library(MUSIC_DIR, { db: DB });
 const clients = new Set(); // { res, room }
 const house = new House(ROOMS, library, broadcast);
 
@@ -217,7 +228,7 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-const source = PLAYLIST_DB ? `table ${PLAYLIST_TABLE} in ${PLAYLIST_DB}` : MUSIC_DIR;
+const source = PLAYLIST_DB ? `MariaDB database ${PLAYLIST_DB}` : MUSIC_DIR;
 let lastVersion = 0;
 function refreshLibrary() {
   return library.scan().then((n) => {
